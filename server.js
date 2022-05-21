@@ -60,3 +60,31 @@ function startApp() {
     })
 }
 
+function viewEmployees() {
+    const query = 'SELECT * FROM employee';
+    db.query(query, function(err, res) {
+        if(err) throw err;
+        console.log(res.length + ' employees found.');
+        console.table('All Employees:', res);
+        startApp();
+    })
+}
+
+function viewDepartments() {
+    const query = 'SELECT * FROM department';
+    db.query(query, function(err, res) {
+        if(err) throw err;
+        console.table('All Departments:', res);
+        startApp();
+    })
+}
+
+function viewRoles() {
+    const query = 'SELECT * FROM roles';
+    db.query(query, function(err, res) {
+        if(err) throw err;
+        console.table('All Roles:', res);
+        startApp();
+    })
+}
+
