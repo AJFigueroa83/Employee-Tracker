@@ -1,5 +1,5 @@
 const mysql = require('mysql2');
-const inquirer = requier('inquirer');
+const inquirer = require('inquirer');
 const consoleTable = require('console.table');
 
 
@@ -19,7 +19,7 @@ const db = mysql.createConnection(
   });
 
 startApp = () => {
-    const promptUser = () => {
+    // const promptUser = () => {
         inquirer.prompt ([
             {
                 type: 'list',
@@ -89,7 +89,7 @@ startApp = () => {
                 break;
             }
         })
-    }
+    
 }
 
 viewEmployees = () => {
@@ -121,7 +121,7 @@ viewRoles = () => {
 }
 
 addEmployee = () => {
-    db.query('SELECT * FROM role', function (err, res) {
+    db.query('SELECT * FROM roles', function (err, res) {
         if (err) throw err;
 
         inquirer.prompt ([
@@ -137,7 +137,7 @@ addEmployee = () => {
             },
             {
                 type: 'list',
-                name: 'role',
+                name: 'roles',
                 choices: function() {
                     const roleArray = [];
                     for (let i = 0; i < res.length; i++) {
@@ -150,18 +150,14 @@ addEmployee = () => {
         ]).then(function(answer) {
             let roleId;
             for (let j = 0; j < res.length; j++) {
-                if (res[j].title == answer.role) {
+                if (res[j].title == answer.roles) {
                     roleId = res[j].id;
                     console.log(roleId)
                 }
             }
-            db.query('INSERT INTO employee SET ?'),
-            {
-                first_name: answer.first_name,
-                last_name: answer.last_name,
-                role_id: roleId,
-            },
-            function (err) {
+            db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`);
+            
+            err = () => {
                 if (err) throw err;
                 console.log('Employee has been added.');
                 startApp();
@@ -186,7 +182,7 @@ addDepartment = () => {
             }
         }
     ]) .then(answer => {
-        const sql = `INSERT INTO department (name) VALUES (?)`;
+        const sql = `INSERT INTO department (dept_name) VALUES (?)`;
         db.query(sql, answer.new_dept, (err, res) => {
             if (err) throw err;
             console.log('Added ' + answer.new_dept) + ' to departments.';
@@ -200,7 +196,7 @@ addRole = () => {
     inquirer.prompt([
         {
             type: 'input',
-            name: 'role',
+            name: 'roles',
             message: 'What role do you want to add?',
             validate: addRole => {
                 if (addRole) {
@@ -225,7 +221,7 @@ addRole = () => {
             }
         }
     ]).then(answer => {
-        const params = [answer.role, answer.salary];
+        const params = [answer.roles, answer.salary];
         const roleSql = `SELECT name, id FROM department`;
         db.promise().query(roleSql, (err, data) => {
             if (err) throw err;
@@ -257,3 +253,35 @@ addRole = () => {
     })
 };
 
+deleteDepartment = () => {
+    const deptSql = `SELECT * FROM department`;
+
+    db.promise().query(deptSql, (err, data) => {
+        if (err) throw err;
+
+        const dept = data.map(({ dept_name, id }) => ({ name: dept_name, value: id}));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'dept',
+                message: 'What department do you want to delete?',
+                choices: dept
+            }
+        ])
+        .then(deptChoice => {
+            const dept = deptChoice.dept;
+            const sql = `DELETE FROM department WHERE id = ?`;
+
+            db.query(sql, dept, (err, res) => {
+                if (err) throw err;
+                console.log('Successfully deleted.');
+            
+            viewDepartments();
+            })
+        })
+    })
+}
+// endApp = () => {
+//     db.end
+// }
