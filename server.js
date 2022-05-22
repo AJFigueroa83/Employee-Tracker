@@ -1,6 +1,7 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const consoleTable = require('console.table');
+const { param } = require('express/lib/request');
 
 
 const db = mysql.createConnection(
@@ -395,7 +396,137 @@ viewEmpDepts = () => {
     })
 }
 
+updateManager = () => {
+    const empSql = `SELECT * FROM employee`;
+    db.query(empSql, (err, data) => {
+        if (err) throw err;
 
-// endApp = () => {
-//     db.end
-// }
+        const employee = data.map(({ id, first_name, last_name }) => ({ name: first_name + ""+ last_name, value: id }));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'name',
+                message: 'Which employee do you want to update?',
+                choices: employee
+            }
+        ])
+        .then(empChoice => {
+            const employee = empChoice.name;
+            const params = [];
+            params.push(employee);
+
+            const managerSql = `SELECT * FROM employee`;
+
+            db.query(managerSql, (err, data) => {
+                if (err) throw err;
+
+                const managers = data.map(({ id, first_name, last_name }) => ({ name: first_name + ""+ last_name, value: id }));
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'manager',
+                        message: "Who is the employee's manager?",
+                        choices: managers
+                    }
+                ])
+                .then(managerChoice => {
+                    const manager = managerChoice.manager;
+                    params.push(manager);
+
+                    let employee = params[0]
+                    params[0] = manager
+                    params[1] = employee
+
+                    const sql = `UPDATE employee SET manager_id = ? WHERE id = ?`;
+
+                    db.query(sql, params, (err, res) => {
+                        if (err) throw err;
+                        console.log("Employee updated!");
+
+                        viewEmployees();
+                    })
+                })
+            })
+        })
+    })
+}
+
+updateRole = () => {
+    const empSql = `SELECT * FROM employee`;
+    db.query(empSql, (err, data) => {
+        if (err) throw err;
+
+        const employee = data.map(({ id, first_name, last_name }) => ({ name: first_name + ""+ last_name, value: id }));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'name',
+                message: 'Which employee do you want to update?',
+                choices: employee
+            }
+        ])
+        .then(empChoice => {
+            const employee = empChoice.name;
+            const params = [];
+            params.push(employee);
+
+            const roleSql = `SELECT * FROM roles`;
+
+            db.query(roleSql, (err, data) => {
+                if (err) throw err;
+
+                const role = data.map(({ id, title }) => ({ name: title, value: id }));
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'role',
+                        message: "What new role do you wish to asign?",
+                        choices: role
+                    }
+                ])
+                .then(roleChoice => {
+                    const role = roleChoice.roles;
+                    params.push(role);
+
+                    let employee = params[0]
+                    params[0] = role
+                    params[1] = employee
+
+                    const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
+
+                    db.query(sql, params, (err, res) => {
+                        if (err) throw err;
+                        console.log("Employee updated!");
+
+                        viewEmployees();
+                    })
+                })
+            })
+        })
+    })
+}
+
+viewBudget = () => {
+    console.log('Showing budget by department...\n');
+
+    const sql = `SELECT department_id AS id,
+    department.dept_name AS department,
+    SUM(salary) AS budget
+    FROM roles
+    JOIN department ON roles.department_id = department.id GROUP BY department_id`;
+
+    db.query( sql, (err, rows) => {
+        if (err) throw err;
+        console.table(rows);
+
+        startApp();
+    })
+}
+
+endApp = () => {
+    db.end();
+}
