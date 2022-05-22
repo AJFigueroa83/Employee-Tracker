@@ -294,7 +294,7 @@ addRole = () => {
 deleteDepartment = () => {
     const deptSql = `SELECT * FROM department`;
 
-    db.promise().query(deptSql, (err, data) => {
+    db.query(deptSql, (err, data) => {
         if (err) throw err;
 
         const dept = data.map(({ dept_name, id }) => ({ name: dept_name, value: id}));
@@ -320,6 +320,82 @@ deleteDepartment = () => {
         })
     })
 }
+
+deleteRole = () => {
+    const roleSql = `SELECT * FROM roles`;
+
+    db.query(roleSql, (err, data) => {
+        if (err) throw err;
+
+        const role = data.map(({ title, id }) => ({name: title, value: id}));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'role',
+                message: "What role do you want to delete?",
+                choices: roles
+            }
+        ])
+        .then(roleChoice => {
+            const role = roleChoice.roles;
+            const sql = `DELETE FROM roles WHERE id = ?`;
+
+            db.query(sql, role, (err, res) => {
+                if (err) throw err;
+                console.log("Successfully deleted");
+
+                viewRoles();
+            })
+        })
+    })
+}
+
+deleteEmployee = () => {
+    const empSql = `SELECT * FROM employee`;
+
+    db.query(empSql, (err, data) => {
+        if (err) throw err;
+
+        const employee = data.map(({ id, first_name, last_name }) => ({name: first_name + ""+ last_name, value: id}));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'name',
+                message: 'Which employee do you  want to delete?',
+                choices: employee
+            }
+        ])
+        .then(empChoice => {
+            const employee = empChoice.name;
+            const sql = `DELETE FROM employee WHERE id = ?`;
+
+            db.query(sql, employee, (err, res) => {
+                if (err) throw err;
+                console.log('Successfully deleted.');
+
+                viewEmployees();
+            })
+        })
+    })
+}
+
+viewEmpDepts = () => {
+    console.log('Showing employees by departments...\n');
+    const sql = `SELECT employee.first_name, employee.last_name, department.dept_name AS department
+    FROM employee
+    LEFT JOIN roles ON employee.role_id = roles.id
+    LEFT JOIN department ON roles.department_id = department.id`;
+
+    db.query(sql, (err, rows) => {
+        if (err) throw err;
+        console.table(rows);
+        startApp();
+    })
+}
+
+
 // endApp = () => {
 //     db.end
 // }
