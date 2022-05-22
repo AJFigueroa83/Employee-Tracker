@@ -2,6 +2,7 @@ const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const consoleTable = require('console.table');
 const { param } = require('express/lib/request');
+const figlet = require('figlet');
 
 
 const db = mysql.createConnection(
@@ -16,8 +17,20 @@ const db = mysql.createConnection(
 
   db.connect(err => {
       if (err) throw err;
-      startApp();
+      connected();
   });
+
+  connected = () => {
+    figlet('Welcome to the \nEmployee Tracker!!', function(err, data) {
+        if (err) {
+            console.log('Something went wrong...');
+            console.dir(err);
+            return;
+        }
+        console.log(data);
+        startApp();
+    });
+  }
 
 startApp = () => {
     // const promptUser = () => {
@@ -335,11 +348,11 @@ deleteRole = () => {
                 type: 'list',
                 name: 'role',
                 message: "What role do you want to delete?",
-                choices: roles
+                choices: role
             }
         ])
         .then(roleChoice => {
-            const role = roleChoice.roles;
+            const role = roleChoice.role;
             const sql = `DELETE FROM roles WHERE id = ?`;
 
             db.query(sql, role, (err, res) => {
@@ -489,7 +502,7 @@ updateRole = () => {
                     }
                 ])
                 .then(roleChoice => {
-                    const role = roleChoice.roles;
+                    const role = roleChoice.role;
                     params.push(role);
 
                     let employee = params[0]
@@ -513,9 +526,7 @@ updateRole = () => {
 viewBudget = () => {
     console.log('Showing budget by department...\n');
 
-    const sql = `SELECT department_id AS id,
-    department.dept_name AS department,
-    SUM(salary) AS budget
+    const sql = `SELECT department_id AS id, department.dept_name AS department, SUM(salary) AS budget
     FROM roles
     JOIN department ON roles.department_id = department.id GROUP BY department_id`;
 
