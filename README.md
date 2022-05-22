@@ -23,7 +23,11 @@
 
 ## Installation
 
-💾 User should run *npm install* User you should also install the following dependencies: *console.table*  *express*  *inquirer*  *mysql2*
+💾 User should run *npm install*. User you should also install the following dependencies: 
+*console.table*  
+*express*  
+*inquirer*  
+*mysql2*
 
 ## Usage
 To start the progrsm the user should run *npm start*. When the program starts it will prompt the user to select what action to do first from a list. They can choose to view tables showing the employees departments or roles. They can also choose to add/delete an employee, deprtment or role and also choose to view a deprtment's salary budget. Choosing any of the options will guide the user through a series of prompts to successfully achieve their goals.
