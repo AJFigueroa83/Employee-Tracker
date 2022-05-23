@@ -23,7 +23,7 @@
 
 ## Installation
 
-💾 User should run *npm install*. User you should also install the following dependencies: 
+💾 User should run *npm install*. User you should also install the following dependencies:  
 *console.table*  
 *express*  
 *inquirer*  
@@ -45,7 +45,7 @@ N/A
 ## Deployment
 
 🚀 Click [here](https://github.com/AJFigueroa83/Employee-Tracker) to view the repo.  
-🚀 Click [here](N/A) to view the deployed site.
+🚀 Click [here](https://drive.google.com/file/d/1Z53Y7ZT2XeR7sVbAyjYLTR2OK_6cbZvA/view) to view the tutorial video.
 
 ## Questions
 

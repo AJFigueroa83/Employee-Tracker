@@ -1,7 +1,6 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const consoleTable = require('console.table');
-const { param } = require('express/lib/request');
 const figlet = require('figlet');
 
 
@@ -21,7 +20,7 @@ const db = mysql.createConnection(
   });
 
   connected = () => {
-    figlet('Welcome to the \nEmployee Tracker!!', function(err, data) {
+    figlet('Welcome to the \nEmployee Manager!!', function(err, data) {
         if (err) {
             console.log('Something went wrong...');
             console.dir(err);
@@ -33,7 +32,6 @@ const db = mysql.createConnection(
   }
 
 startApp = () => {
-    // const promptUser = () => {
         inquirer.prompt ([
             {
                 type: 'list',
@@ -52,7 +50,7 @@ startApp = () => {
                     'Delete department',
                     'Delete role',
                     'Delete employee',
-                    'View department budgets',
+                    'View department budget',
                     'Exit'
                 ]
             }
@@ -96,6 +94,7 @@ startApp = () => {
                 break;
             case 'View department budget':
                 viewBudget();
+                break;
             case 'Exit':
                 endApp();
                 break;
@@ -107,11 +106,21 @@ startApp = () => {
 }
 
 viewEmployees = () => {
-    const query = 'SELECT * FROM employee';
-    db.query(query, function(err, res) {
+    const query = `SELECT employee.id,
+        employee.first_name,
+        employee.last_name,
+        roles.title,
+        department.dept_name AS department,
+        roles.salary,
+        CONCAT (manager.first_name, " ", manager.last_name) AS manager
+    FROM employee
+        LEFT JOIN roles ON employee.role_id = roles.id
+        LEFT JOIN department ON roles.department_id = department.id
+        LEFT JOIN employee manager ON employee.manager_id = manager.id`;
+
+    db.query(query, (err, rows) => {
         if(err) throw err;
-        console.log(res.length + ' employees found.');
-        console.table('All Employees:', res);
+        console.table(rows);
         startApp();
     })
 }
@@ -126,7 +135,13 @@ viewDepartments = () => {
 }
 
 viewRoles = () => {
-    const query = 'SELECT * FROM roles';
+    const query = `SELECT roles.id,
+        roles.title,
+        salary,
+        department.dept_name AS department
+        FROM roles
+        INNER JOIN department ON roles.department_id = department.id`;
+
     db.query(query, function(err, res) {
         if(err) throw err;
         console.table('All Roles:', res);
@@ -526,11 +541,13 @@ updateRole = () => {
 viewBudget = () => {
     console.log('Showing budget by department...\n');
 
-    const sql = `SELECT department_id AS id, department.dept_name AS department, SUM(salary) AS budget
+    const sql = `SELECT department_id AS id, 
+        department.dept_name AS department,
+        SUM(salary) AS budget
     FROM roles
-    JOIN department ON roles.department_id = department.id GROUP BY department_id`;
+    LEFT JOIN department ON roles.department_id = department.id GROUP BY department_id`;
 
-    db.query( sql, (err, rows) => {
+    db.query(sql, (err, rows) => {
         if (err) throw err;
         console.table(rows);
 
